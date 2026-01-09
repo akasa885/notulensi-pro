@@ -1,7 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/app/lib/auth";
+import { validateJsonRequest } from "@/app/lib/apiMiddleware";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const user = await getCurrentUser();
 

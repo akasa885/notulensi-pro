@@ -6,6 +6,7 @@ import { Note, noteToResponse } from "@/app/models";
 import { getCurrentUser } from "@/app/lib/auth";
 import { ObjectId } from "mongodb";
 import config from "@/app/config";
+import { validateJsonRequest } from "@/app/lib/apiMiddleware";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -28,7 +29,11 @@ function getFilenameForDate(date: string): string {
 }
 
 // GET: Retrieve all notes
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const user = await getCurrentUser();
     const storageMode = config.storage.mode;
@@ -95,6 +100,10 @@ export async function GET() {
 
 // POST: Save a new note
 export async function POST(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -183,6 +192,10 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update an existing note
 export async function PUT(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -336,6 +349,10 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Remove a note
 export async function DELETE(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const user = await getCurrentUser();
     if (!user) {

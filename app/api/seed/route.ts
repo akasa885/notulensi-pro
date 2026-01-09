@@ -1,10 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getDatabase } from "@/app/lib/mongodb";
 import { User } from "@/app/models";
 import { hashPassword } from "@/app/lib/auth";
+import { validateJsonRequest } from "@/app/lib/apiMiddleware";
 
 // POST: Create seeder data
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // Validate JSON request
+  const validationError = validateJsonRequest(request);
+  if (validationError) return validationError;
+
   try {
     const db = await getDatabase();
     const usersCollection = db.collection<User>("users");
