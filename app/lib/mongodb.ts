@@ -31,6 +31,15 @@ export async function connectToDatabase() {
 
   const client = new MongoClient(uri, {
     serverApi: ServerApiVersion.v1,
+    tls: true,
+    tlsAllowInvalidCertificates: false,
+    tlsAllowInvalidHostnames: false,
+    retryWrites: true,
+    retryReads: true,
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    connectTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
   });
 
   await client.connect();
