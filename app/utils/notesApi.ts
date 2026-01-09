@@ -5,7 +5,11 @@ import { Note } from "../constants";
  */
 export async function fetchNotes(): Promise<Note[]> {
   try {
-    const response = await fetch("/api/notes");
+    const response = await fetch("/api/notes", {
+      headers: {
+        Accept: "application/json",
+      },
+    });
     const data = await response.json();
     return data.notes || [];
   } catch (error) {
@@ -25,6 +29,7 @@ export async function saveNote(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(note),
     });
@@ -45,6 +50,9 @@ export async function deleteNote(
   try {
     const response = await fetch(`/api/notes?id=${noteId}`, {
       method: "DELETE",
+      headers: {
+        Accept: "application/json",
+      },
     });
     const data = await response.json();
     return data;
@@ -65,6 +73,7 @@ export async function updateNote(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify(note),
     });

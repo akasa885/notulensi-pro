@@ -15,7 +15,11 @@ export default function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/auth/me');
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
         const data = await response.json();
 
         if (data.success) {
@@ -48,7 +52,13 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
       setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
