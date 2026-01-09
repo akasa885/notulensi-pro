@@ -6,8 +6,8 @@ import { useState, useEffect, RefObject } from "react";
  * @param rootMargin - Margin untuk intersection observer
  * @returns boolean - true jika elemen terlihat di viewport
  */
-export const useOnScreen = (
-  ref: RefObject<HTMLElement>,
+export const useOnScreen = <T extends HTMLElement>(
+  ref: RefObject<T | null>,
   rootMargin: string = "0px"
 ): boolean => {
   const [isIntersecting, setIntersecting] = useState(false);
