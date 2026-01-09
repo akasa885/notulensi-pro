@@ -1,65 +1,196 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useEffect } from 'react';
+import { Navbar } from './components/Navbar';
+import { DashboardView } from './components/DashboardView';
+import { TimelineView } from './components/TimelineView';
+import { CreateView } from './components/CreateView';
+import { DetailView } from './components/DetailView';
+import { downloadSingleNote } from './utils/downloadJSON';
+import { fetchNotes, saveNote, deleteNote as deleteNoteApi } from './utils/notesApi';
+import {
+  Note,
+  FormData,
+  ViewType,
+  DEFAULT_GROUPS,
+  INITIAL_FORM_DATA,
+  STORAGE_KEYS
+} from './constants';
+
+export default function App() {
+  // State
+  const [view, setView] = useState<ViewType>('dashboard');
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [groups, setGroups] = useState<string[]>(DEFAULT_GROUPS);
+  const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
+  const [loading, setLoading] = useState(false);
+
+  // Load notes from API and groups from localStorage
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+
+      // Load notes from API
+      const notesFromApi = await fetchNotes();
+      setNotes(notesFromApi);
+
+      // Load groups from localStorage
+      const savedGroups = localStorage.getItem(STORAGE_KEYS.GROUPS);
+      if (savedGroups) {
+        setGroups(JSON.parse(savedGroups));
+      }
+
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  // --- Actions ---
+  const handleSaveNote = async () => {
+    if (!formData.title || !formData.content) {
+      alert("Judul dan isi notulensi tidak boleh kosong.");
+      return;
+    }
+
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title: formData.title,
+      group: formData.group,
+      content: formData.content,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    setLoading(true);
+    const success = await saveNote(newNote);
+
+    if (success) {
+      // Refresh notes from API
+      const updatedNotes = await fetchNotes();
+      setNotes(updatedNotes);
+
+      // Reset & Redirect
+      setFormData(INITIAL_FORM_DATA);
+      setView('list');
+    } else {
+      alert("Gagal menyimpan notulensi. Silakan coba lagi.");
+    }
+
+    setLoading(false);
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    if (confirm('Hapus notulensi ini?')) {
+      setLoading(true);
+      const success = await deleteNoteApi(id);
+
+      if (success) {
+        // Refresh notes from API
+        const updatedNotes = await fetchNotes();
+        setNotes(updatedNotes);
+
+        if (view === 'detail') {
+          setView('list');
+        }
+      } else {
+        alert("Gagal menghapus notulensi. Silakan coba lagi.");
+      }
+
+      setLoading(false);
+    }
+  };
+
+  const handleAddGroup = () => {
+    const newGroup = prompt("Masukkan nama grup baru:");
+    if (newGroup && !groups.includes(newGroup)) {
+      const updatedGroups = [...groups, newGroup];
+      setGroups(updatedGroups);
+      localStorage.setItem(STORAGE_KEYS.GROUPS, JSON.stringify(updatedGroups));
+    }
+  };
+
+  const handleNoteClick = (note: Note) => {
+    setCurrentNote(note);
+    setView('detail');
+  };
+
+  const handleViewChange = (newView: ViewType) => {
+    setView(newView);
+    if (newView !== 'detail') {
+      setCurrentNote(null);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
+      <Navbar currentView={view} onViewChange={handleViewChange} />
+
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-xl">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-slate-700">Memproses...</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      )}
+
+      <main className="max-w-6xl mx-auto px-4 md:px-8 py-8">
+        {view === 'dashboard' && (
+          <DashboardView
+            notes={notes}
+            groups={groups}
+            onCreateNew={() => setView('create')}
+          />
+        )}
+
+        {view === 'list' && (
+          <TimelineView
+            notes={notes}
+            onCreateNew={() => setView('create')}
+            onNoteClick={handleNoteClick}
+          />
+        )}
+
+        {view === 'create' && (
+          <CreateView
+            formData={formData}
+            groups={groups}
+            onFormChange={setFormData}
+            onSave={handleSaveNote}
+            onCancel={() => setView('dashboard')}
+            onAddGroup={handleAddGroup}
+          />
+        )}
+
+        {view === 'detail' && (
+          <DetailView
+            note={currentNote}
+            onBack={() => setView('list')}
+            onDownload={downloadSingleNote}
+            onDelete={handleDeleteNote}
+          />
+        )}
       </main>
+
+      {/* Styles for Tailwind Custom Animations */}
+      <style>{`
+        @keyframes fade-left {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fade-right {
+          from { opacity: 0; transform: translateX(50px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-fade-left {
+          animation: fade-left 0.8s ease-out forwards;
+        }
+        .animate-fade-right {
+          animation: fade-right 0.8s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
