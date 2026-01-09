@@ -46,7 +46,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             </div>
             <div
                 ref={contentEditableRef}
-                className="p-4 min-h-[300px] outline-none prose max-w-none text-slate-700"
+                className="p-4 min-h-[300px] outline-none prose max-w-none text-slate-900 bg-white"
                 contentEditable
                 onInput={handleInput}
                 suppressContentEditableWarning={true}
