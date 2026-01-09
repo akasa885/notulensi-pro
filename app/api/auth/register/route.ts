@@ -5,6 +5,14 @@ import { hashPassword, generateToken, setAuthCookie } from "@/app/lib/auth";
 import { validateJsonRequest } from "@/app/lib/apiMiddleware";
 
 export async function POST(request: NextRequest) {
+  // Block registration in production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { success: false, error: "Registration is disabled in production" },
+      { status: 403 }
+    );
+  }
+
   // Validate JSON request
   const validationError = validateJsonRequest(request);
   if (validationError) return validationError;

@@ -149,19 +149,21 @@ export function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }:
                     </button>
                 </form>
 
-                <div className="mt-4 text-center">
-                    <button
-                        onClick={() => {
-                            setIsLogin(isLogin === 'login' ? 'register' : 'login');
-                            setError('');
-                        }}
-                        className="text-blue-600 hover:text-blue-700 text-sm"
-                    >
-                        {isLogin === 'login'
-                            ? "Don't have an account? Register"
-                            : 'Already have an account? Login'}
-                    </button>
-                </div>
+                {process.env.NODE_ENV !== 'production' && (
+                    <div className="mt-4 text-center">
+                        <button
+                            onClick={() => {
+                                setIsLogin(isLogin === 'login' ? 'register' : 'login');
+                                setError('');
+                            }}
+                            className="text-blue-600 hover:text-blue-700 text-sm"
+                        >
+                            {isLogin === 'login'
+                                ? "Don't have an account? Register"
+                                : 'Already have an account? Login'}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
