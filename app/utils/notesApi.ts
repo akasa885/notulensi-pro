@@ -49,3 +49,23 @@ export async function deleteNote(noteId: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Update an existing note via API
+ */
+export async function updateNote(note: Note): Promise<boolean> {
+  try {
+    const response = await fetch("/api/notes", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(note),
+    });
+    const data = await response.json();
+    return data.success;
+  } catch (error) {
+    console.error("Error updating note:", error);
+    return false;
+  }
+}

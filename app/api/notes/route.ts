@@ -81,6 +81,102 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT: Update an existing note
+export async function PUT(request: NextRequest) {
+  try {
+    await ensureDataDir();
+    const updatedNote = await request.json();
+
+    if (!updatedNote.id) {
+      return NextResponse.json(
+        { success: false, error: "Note ID required" },
+        { status: 400 }
+      );
+    }
+
+    const files = await fs.readdir(DATA_DIR);
+    const jsonFiles = files.filter((file) => file.endsWith(".json"));
+
+    let found = false;
+    let oldFilePath = "";
+    let noteToUpdate: any = null;
+
+    // Find the note in existing files
+    for (const file of jsonFiles) {
+      const filePath = path.join(DATA_DIR, file);
+      const content = await fs.readFile(filePath, "utf-8");
+      let notes = JSON.parse(content);
+
+      const noteIndex = notes.findIndex(
+        (note: any) => note.id === updatedNote.id
+      );
+
+      if (noteIndex !== -1) {
+        found = true;
+        oldFilePath = filePath;
+        noteToUpdate = notes[noteIndex];
+
+        // Remove note from old file
+        notes.splice(noteIndex, 1);
+
+        if (notes.length === 0) {
+          await fs.unlink(filePath);
+        } else {
+          await fs.writeFile(filePath, JSON.stringify(notes, null, 2));
+        }
+        break;
+      }
+    }
+
+    if (!found) {
+      return NextResponse.json(
+        { success: false, error: "Note not found" },
+        { status: 404 }
+      );
+    }
+
+    // Update note with new data
+    const finalNote = {
+      ...noteToUpdate,
+      ...updatedNote,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Save to appropriate file based on createdAt date
+    const filename = getFilenameForDate(finalNote.createdAt);
+    const newFilePath = path.join(DATA_DIR, filename);
+
+    let notes: any[] = [];
+
+    // Read existing notes for this date if file exists
+    try {
+      const content = await fs.readFile(newFilePath, "utf-8");
+      notes = JSON.parse(content);
+    } catch {
+      notes = [];
+    }
+
+    // Add updated note
+    notes.unshift(finalNote);
+
+    // Sort by creation date (newest first)
+    notes.sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    await fs.writeFile(newFilePath, JSON.stringify(notes, null, 2));
+
+    return NextResponse.json({ success: true, note: finalNote });
+  } catch (error) {
+    console.error("Error updating note:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update note" },
+      { status: 500 }
+    );
+  }
+}
+
 // DELETE: Remove a note
 export async function DELETE(request: NextRequest) {
   try {

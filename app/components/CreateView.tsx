@@ -12,6 +12,7 @@ interface CreateViewProps {
     onSave: () => void;
     onCancel: () => void;
     onAddGroup: () => void;
+    isEditMode?: boolean;
 }
 
 export const CreateView: React.FC<CreateViewProps> = ({
@@ -20,7 +21,8 @@ export const CreateView: React.FC<CreateViewProps> = ({
     onFormChange,
     onSave,
     onCancel,
-    onAddGroup
+    onAddGroup,
+    isEditMode = false
 }) => {
     return (
         <div className="animate-in slide-in-from-bottom-5 duration-300 max-w-4xl mx-auto">
@@ -28,7 +30,9 @@ export const CreateView: React.FC<CreateViewProps> = ({
                 <button onClick={onCancel} className="p-2 hover:bg-slate-100 rounded-full">
                     <ArrowLeft size={24} className="text-slate-600" />
                 </button>
-                <h2 className="text-2xl font-bold text-slate-800">Buat Notulensi Baru</h2>
+                <h2 className="text-2xl font-bold text-slate-800">
+                    {isEditMode ? 'Edit Notulensi' : 'Buat Notulensi Baru'}
+                </h2>
             </div>
 
             <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
@@ -56,8 +60,8 @@ export const CreateView: React.FC<CreateViewProps> = ({
                                 key={group}
                                 onClick={() => onFormChange({ ...formData, group })}
                                 className={`px-4 py-2 rounded-full text-sm transition-all border ${formData.group === group
-                                        ? 'bg-blue-600 text-white border-blue-600'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
                                     }`}
                             >
                                 {group}
@@ -89,7 +93,7 @@ export const CreateView: React.FC<CreateViewProps> = ({
                         onClick={onSave}
                         className="px-6 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 font-medium shadow-lg shadow-blue-200 flex items-center gap-2"
                     >
-                        <Save size={18} /> Simpan Notulensi
+                        <Save size={18} /> {isEditMode ? 'Update Notulensi' : 'Simpan Notulensi'}
                     </button>
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Calendar, Clock, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Download, Trash2, Edit } from 'lucide-react';
 import { Note } from '../constants';
 import { formatDate } from '../utils/formatDate';
 
@@ -8,9 +8,10 @@ interface DetailViewProps {
     onBack: () => void;
     onDownload: (note: Note) => void;
     onDelete: (id: string) => void;
+    onEdit: (note: Note) => void;
 }
 
-export const DetailView: React.FC<DetailViewProps> = ({ note, onBack, onDownload, onDelete }) => {
+export const DetailView: React.FC<DetailViewProps> = ({ note, onBack, onDownload, onDelete, onEdit }) => {
     if (!note) return null;
 
     return (
@@ -28,6 +29,13 @@ export const DetailView: React.FC<DetailViewProps> = ({ note, onBack, onDownload
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <button
+                        onClick={() => onEdit(note)}
+                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 text-sm border border-slate-200"
+                        title="Edit"
+                    >
+                        <Edit size={18} /> <span className="hidden sm:inline">Edit</span>
+                    </button>
                     <button
                         onClick={() => onDownload(note)}
                         className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg flex items-center gap-2 text-sm border border-slate-200"
@@ -55,7 +63,7 @@ export const DetailView: React.FC<DetailViewProps> = ({ note, onBack, onDownload
                     </div>
                 </div>
                 <div className="p-8 prose max-w-none text-slate-700">
-                    <div dangerouslySetInnerHTML={{ __html: note.content }} />
+                    <div id="note-detail-content" className="note-content-display" dangerouslySetInnerHTML={{ __html: note.content }} />
                 </div>
             </div>
         </div>

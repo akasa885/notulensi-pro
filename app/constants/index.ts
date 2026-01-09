@@ -14,7 +14,7 @@ export interface FormData {
   content: string;
 }
 
-export type ViewType = "dashboard" | "list" | "create" | "detail";
+export type ViewType = "dashboard" | "list" | "create" | "detail" | "edit";
 
 // Default values
 export const DEFAULT_GROUPS = ["Umum", "Teknis", "Manajemen", "Pemasaran"];

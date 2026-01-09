@@ -7,7 +7,7 @@ import { TimelineView } from './components/TimelineView';
 import { CreateView } from './components/CreateView';
 import { DetailView } from './components/DetailView';
 import { downloadSingleNote } from './utils/downloadJSON';
-import { fetchNotes, saveNote, deleteNote as deleteNoteApi } from './utils/notesApi';
+import { fetchNotes, saveNote, deleteNote as deleteNoteApi, updateNote } from './utils/notesApi';
 import {
   Note,
   FormData,
@@ -23,6 +23,7 @@ export default function App() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [groups, setGroups] = useState<string[]>(DEFAULT_GROUPS);
   const [currentNote, setCurrentNote] = useState<Note | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
 
@@ -54,28 +55,59 @@ export default function App() {
       return;
     }
 
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title: formData.title,
-      group: formData.group,
-      content: formData.content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
     setLoading(true);
-    const success = await saveNote(newNote);
 
-    if (success) {
-      // Refresh notes from API
-      const updatedNotes = await fetchNotes();
-      setNotes(updatedNotes);
+    if (editingNoteId) {
+      // Update existing note
+      const noteToUpdate = notes.find(n => n.id === editingNoteId);
+      if (noteToUpdate) {
+        const updatedNote: Note = {
+          ...noteToUpdate,
+          title: formData.title,
+          group: formData.group,
+          content: formData.content,
+          updatedAt: new Date().toISOString()
+        };
 
-      // Reset & Redirect
-      setFormData(INITIAL_FORM_DATA);
-      setView('list');
+        const success = await updateNote(updatedNote);
+
+        if (success) {
+          // Refresh notes from API
+          const updatedNotes = await fetchNotes();
+          setNotes(updatedNotes);
+
+          // Reset & Redirect
+          setFormData(INITIAL_FORM_DATA);
+          setEditingNoteId(null);
+          setView('list');
+        } else {
+          alert("Gagal mengupdate notulensi. Silakan coba lagi.");
+        }
+      }
     } else {
-      alert("Gagal menyimpan notulensi. Silakan coba lagi.");
+      // Create new note
+      const newNote: Note = {
+        id: Date.now().toString(),
+        title: formData.title,
+        group: formData.group,
+        content: formData.content,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const success = await saveNote(newNote);
+
+      if (success) {
+        // Refresh notes from API
+        const updatedNotes = await fetchNotes();
+        setNotes(updatedNotes);
+
+        // Reset & Redirect
+        setFormData(INITIAL_FORM_DATA);
+        setView('list');
+      } else {
+        alert("Gagal menyimpan notulensi. Silakan coba lagi.");
+      }
     }
 
     setLoading(false);
@@ -116,10 +148,24 @@ export default function App() {
     setView('detail');
   };
 
+  const handleEditNote = (note: Note) => {
+    setEditingNoteId(note.id);
+    setFormData({
+      title: note.title,
+      group: note.group,
+      content: note.content
+    });
+    setView('edit');
+  };
+
   const handleViewChange = (newView: ViewType) => {
     setView(newView);
     if (newView !== 'detail') {
       setCurrentNote(null);
+    }
+    if (newView !== 'edit' && newView !== 'create') {
+      setEditingNoteId(null);
+      setFormData(INITIAL_FORM_DATA);
     }
   };
 
@@ -161,6 +207,23 @@ export default function App() {
             onSave={handleSaveNote}
             onCancel={() => setView('dashboard')}
             onAddGroup={handleAddGroup}
+            isEditMode={false}
+          />
+        )}
+
+        {view === 'edit' && (
+          <CreateView
+            formData={formData}
+            groups={groups}
+            onFormChange={setFormData}
+            onSave={handleSaveNote}
+            onCancel={() => {
+              setEditingNoteId(null);
+              setFormData(INITIAL_FORM_DATA);
+              setView('detail');
+            }}
+            onAddGroup={handleAddGroup}
+            isEditMode={true}
           />
         )}
 
@@ -170,6 +233,7 @@ export default function App() {
             onBack={() => setView('list')}
             onDownload={downloadSingleNote}
             onDelete={handleDeleteNote}
+            onEdit={handleEditNote}
           />
         )}
       </main>
