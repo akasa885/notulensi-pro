@@ -69,7 +69,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ notes, onViewNote, o
                                         key={note.id}
                                         note={note}
                                         index={noteIndex + index}
-                                        onClick={() => onNoteClick(note)}
+                                        onClick={() => onViewNote(note)}
                                     />
                                 ))}
                             </div>
