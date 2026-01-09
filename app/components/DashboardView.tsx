@@ -5,11 +5,14 @@ import { formatDate } from '../utils/formatDate';
 
 interface DashboardViewProps {
     notes: Note[];
-    groups: string[];
+    onViewNote: (note: Note) => void;
+    onEditNote: (note: Note) => void;
+    onDeleteNote: (id: string) => void;
     onCreateNew: () => void;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ notes, groups, onCreateNew }) => {
+export const DashboardView: React.FC<DashboardViewProps> = ({ notes, onViewNote, onEditNote, onDeleteNote, onCreateNew }) => {
+    const groups = Array.from(new Set(notes.map(n => n.group)));
     const stats = {
         total: notes.length,
         groups: groups.length,

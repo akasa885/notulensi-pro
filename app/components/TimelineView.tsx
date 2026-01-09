@@ -5,11 +5,13 @@ import { TimelineItem } from './TimelineItem';
 
 interface TimelineViewProps {
     notes: Note[];
+    onViewNote: (note: Note) => void;
+    onEditNote: (note: Note) => void;
+    onDeleteNote: (id: string) => void;
     onCreateNew: () => void;
-    onNoteClick: (note: Note) => void;
 }
 
-export const TimelineView: React.FC<TimelineViewProps> = ({ notes, onCreateNew, onNoteClick }) => {
+export const TimelineView: React.FC<TimelineViewProps> = ({ notes, onViewNote, onEditNote, onDeleteNote, onCreateNew }) => {
     const sortedNotes = [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     // Group notes by month and year

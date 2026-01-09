@@ -17,7 +17,9 @@ export async function fetchNotes(): Promise<Note[]> {
 /**
  * Save a new note via API
  */
-export async function saveNote(note: Note): Promise<boolean> {
+export async function saveNote(
+  note: Note
+): Promise<{ success: boolean; note?: Note }> {
   try {
     const response = await fetch("/api/notes", {
       method: "POST",
@@ -27,33 +29,37 @@ export async function saveNote(note: Note): Promise<boolean> {
       body: JSON.stringify(note),
     });
     const data = await response.json();
-    return data.success;
+    return data;
   } catch (error) {
     console.error("Error saving note:", error);
-    return false;
+    return { success: false };
   }
 }
 
 /**
  * Delete a note via API
  */
-export async function deleteNote(noteId: string): Promise<boolean> {
+export async function deleteNote(
+  noteId: string
+): Promise<{ success: boolean }> {
   try {
     const response = await fetch(`/api/notes?id=${noteId}`, {
       method: "DELETE",
     });
     const data = await response.json();
-    return data.success;
+    return data;
   } catch (error) {
     console.error("Error deleting note:", error);
-    return false;
+    return { success: false };
   }
 }
 
 /**
  * Update an existing note via API
  */
-export async function updateNote(note: Note): Promise<boolean> {
+export async function updateNote(
+  note: Note
+): Promise<{ success: boolean; note?: Note }> {
   try {
     const response = await fetch("/api/notes", {
       method: "PUT",
@@ -63,9 +69,9 @@ export async function updateNote(note: Note): Promise<boolean> {
       body: JSON.stringify(note),
     });
     const data = await response.json();
-    return data.success;
+    return data;
   } catch (error) {
     console.error("Error updating note:", error);
-    return false;
+    return { success: false };
   }
 }
